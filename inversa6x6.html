@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inversa de Matriz 6x6</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -25,27 +26,27 @@
 
     main {
       flex: 1;
-      padding: 40px 20px;
-      max-width: 1100px;
+      padding: 30px 20px;
+      max-width: 1200px;
       margin: 0 auto;
       border-left: 2px solid #007BFF;
       border-right: 2px solid #007BFF;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+      box-shadow: 0 0 10px rgba(0,123,255,0.1);
       text-align: center;
     }
 
     .matriz {
       display: grid;
-      grid-template-columns: repeat(6, 60px);
+      grid-template-columns: repeat(6, 55px);
       gap: 10px;
       justify-content: center;
-      margin: 20px 0;
+      margin: 15px 0;
     }
 
     .matriz input {
-      width: 60px;
-      height: 40px;
+      width: 55px;
+      height: 38px;
       text-align: center;
       font-size: 1rem;
       border: 2px solid #007BFF;
@@ -53,7 +54,34 @@
       color: #003366;
     }
 
-    button {
+    .contenedor-matrices {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+
+    .matriz-resultado {
+      display: grid;
+      grid-template-columns: repeat(6, 55px);
+      gap: 8px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .matriz-resultado div {
+      width: 55px;
+      height: 38px;
+      line-height: 38px;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      text-align: center;
+      font-family: 'Roboto Mono', monospace;
+      background: #f4f8ff;
+    }
+
+    button, select {
       background-color: #007BFF;
       color: white;
       border: none;
@@ -63,6 +91,15 @@
       transition: 0.3s;
       font-weight: 600;
       margin-top: 15px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    select {
+      background-color: white;
+      color: #003366;
+      border: 2px solid #007BFF;
+      padding: 8px 12px;
+      margin-left: 10px;
     }
 
     button:hover {
@@ -75,24 +112,13 @@
       padding: 25px 30px;
       border-radius: 12px;
       border: 1px solid #cce0ff;
-      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.15);
+      box-shadow: 0 4px 10px rgba(0,123,255,0.15);
       font-family: 'Roboto Mono', monospace;
       font-size: 0.95rem;
       color: #002b5c;
       text-align: left;
       line-height: 1.6;
-      overflow-x: auto;
       white-space: pre-wrap;
-    }
-
-    .resultado table {
-      margin: 10px auto;
-      border-collapse: collapse;
-    }
-
-    .resultado td {
-      border: 1px solid #007BFF;
-      padding: 5px 10px;
     }
 
     footer {
@@ -105,35 +131,21 @@
       letter-spacing: 8px;
       padding: 20px 0;
       border-top: 3px solid #007BFF;
-      text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
-    }@media (max-width: 768px) {
-  main {
-    padding: 20px 10px;
-  }
+      text-shadow: 0 0 8px rgba(255,215,0,0.7);
+    }
 
-  .matriz {
-    grid-template-columns: repeat(6, 45px);
-    gap: 6px;
-  }
+    h3 {
+      margin-bottom: 10px;
+      color: #007BFF;
+    }
 
-  .matriz input {
-    width: 45px;
-    height: 35px;
-    font-size: 0.9rem;
-  }
-
-  button {
-    width: 100%;
-    font-size: 1rem;
-    padding: 12px 0;
-  }
-
-  footer {
-    font-size: 1.3rem;
-    letter-spacing: 4px;
-  }
-}
-
+    @media (max-width: 768px) {
+      main { padding: 20px 10px; }
+      .matriz, .matriz-resultado { grid-template-columns: repeat(6, 40px); gap: 6px; }
+      .matriz input, .matriz-resultado div { width: 40px; height: 35px; font-size: 0.85rem; line-height: 35px; }
+      button { width: 100%; font-size: 1rem; padding: 12px 0; }
+      footer { font-size: 1.3rem; letter-spacing: 4px; }
+    }
   </style>
 </head>
 <body>
@@ -144,95 +156,125 @@
 
     <div class="matriz" id="matriz6x6"></div>
 
-    <button onclick="calcularInversa()">Calcular Inversa</button>
+    <div>
+      <button id="calcular">Calcular Inversa</button>
+      <label for="modo">Resultado en:</label>
+      <select id="modo">
+        <option value="decimal">Decimal</option>
+        <option value="fraccion">Fracción</option>
+      </select>
+    </div>
 
-    <div id="resultado"></div>
+    <div class="contenedor-matrices">
+      <div>
+        <h3>Matriz Identidad</h3>
+        <div class="matriz-resultado" id="identidad"></div>
+      </div>
+      <div>
+        <h3>Matriz Inversa</h3>
+        <div class="matriz-resultado" id="inversa"></div>
+      </div>
+    </div>
+
+    <div class="resultado" id="resultado"></div>
   </main>
 
   <footer>INVERSA 6X6</footer>
 
   <script>
+    const n = 6;
     const matrizContainer = document.getElementById("matriz6x6");
-    for (let i = 0; i < 6; i++) {
-      for (let j = 0; j < 6; j++) {
-        const input = document.createElement("input");
-        input.type = "number";
-        input.id = `a${i}${j}`;
-        input.value = 0;
-        matrizContainer.appendChild(input);
-      }
+
+    for (let i = 0; i < n*n; i++) {
+      const input = document.createElement("input");
+      input.type = "number";
+      input.step = "any";
+      input.id = `cell${i}`;
+      input.value = 0;
+      matrizContainer.appendChild(input);
     }
 
-    function calcularInversa() {
-      const n = 6;
-      const A = [];
+    document.getElementById("calcular").addEventListener("click", () => {
+      let A = [], I = [];
       for (let i = 0; i < n; i++) {
-        const fila = [];
+        A[i] = [];
+        I[i] = [];
         for (let j = 0; j < n; j++) {
-          fila.push(parseFloat(document.getElementById(`a${i}${j}`).value) || 0);
+          A[i][j] = parseFloat(document.getElementById(`cell${i*n+j}`).value) || 0;
+          I[i][j] = (i===j?1:0);
         }
-        A.push(fila);
       }
 
-      let I = Array.from({ length: n }, (_, i) =>
-        Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))
-      );
-      let pasos = "=== MATRIZ ORIGINAL ===\n" + mostrarMatriz(A) +
-                  "\n=== MATRIZ IDENTIDAD ===\n" + mostrarMatriz(I) +
-                  "\n=== MATRIZ AUMENTADA ===\n" + mostrarMatriz(A.map((fila, i) => [...fila, ...I])) + "\n";
+      let pasos = [];
+      pasos.push("Matriz aumentada [A | I]:");
 
       for (let i = 0; i < n; i++) {
-        let pivote = A[i][i];
-        if (pivote === 0) {
-          let filaCambio = A.findIndex((f, idx) => idx > i && f[i] !== 0);
-          if (filaCambio === -1) {
-            document.getElementById("resultado").innerHTML = "<div class='resultado'>❌ No tiene inversa (determinante = 0)</div>";
+        if (A[i][i] === 0) {
+          let swap = -1;
+          for (let k = i+1; k<n; k++) if (A[k][i]!==0){ swap=k; break;}
+          if(swap===-1){
+            document.getElementById('resultado').innerHTML = "⚠️ La matriz no tiene inversa (determinante=0).";
             return;
           }
-          [A[i], A[filaCambio]] = [A[filaCambio], A[i]];
-          [I[i], I[filaCambio]] = [I[filaCambio], I[i]];
-          pasos += `Se intercambia fila ${i + 1} con fila ${filaCambio + 1}\n`;
+          [A[i],A[swap]]=[A[swap],A[i]];
+          [I[i],I[swap]]=[I[swap],I[i]];
+          pasos.push(`↔ Se intercambia F${i+1} ↔ F${swap+1}`);
         }
 
-        pivote = A[i][i];
-        pasos += `Pivote F${i + 1} = ${pivote}\n`;
-        for (let j = 0; j < n; j++) {
-          A[i][j] /= pivote;
-          I[i][j] /= pivote;
+        const pivote = A[i][i];
+        for(let j=0;j<n;j++){
+          A[i][j]/=pivote;
+          I[i][j]/=pivote;
         }
-        pasos += `Se divide la fila ${i + 1} por ${pivote}\n` + mostrarMatriz(A.map((fila, idx) => [...fila, ...I[idx]]));
+        pasos.push(`F${i+1} ÷= ${pivote.toFixed(4)}`);
 
-        for (let k = 0; k < n; k++) {
-          if (k !== i) {
-            let factor = A[k][i];
-            for (let j = 0; j < n; j++) {
-              A[k][j] -= factor * A[i][j];
-              I[k][j] -= factor * I[i][j];
+        for(let k=0;k<n;k++){
+          if(k!==i){
+            const factor = A[k][i];
+            for(let j=0;j<n;j++){
+              A[k][j]-=factor*A[i][j];
+              I[k][j]-=factor*I[i][j];
             }
-            pasos += `F${k + 1} = F${k + 1} - (${factor.toFixed(2)})*F${i + 1}\n` + mostrarMatriz(A.map((fila, idx) => [...fila, ...I[idx]]));
+            pasos.push(`F${k+1} = F${k+1} - (${factor.toFixed(4)})×F${i+1}`);
           }
         }
       }
 
-      pasos += "\n✅ MATRIZ INVERSA RESULTANTE:\n" + mostrarMatriz(I);
+      pasos.push("✅ Se obtiene la matriz inversa en el lado derecho.");
 
-      document.getElementById("resultado").innerHTML = `
-        <div class="resultado">
-          <h3>Matriz Inversa:</h3>
-          ${crearTabla(I)}
-          <pre>${pasos}</pre>
-        </div>
-      `;
+      mostrarMatriz(identidad(n),'identidad');
+      mostrarMatriz(I,'inversa', document.getElementById('modo').value);
+      document.getElementById('resultado').innerHTML = pasos.join('<br>');
+    });
+
+    function identidad(n){
+      return Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>(i===j?1:0)));
     }
 
-    function mostrarMatriz(M) {
-      return M.map(fila => fila.map(v => v.toFixed(2).padStart(8)).join(" ")).join("\n") + "\n";
+    function mostrarMatriz(matriz,contenedorId,modo='decimal'){
+      const cont = document.getElementById(contenedorId);
+      cont.innerHTML='';
+      matriz.forEach(fila=>{
+        fila.forEach(val=>{
+          const div=document.createElement('div');
+          div.textContent=modo==='fraccion'?decimalAFraccion(val):Number(val.toFixed(3));
+          cont.appendChild(div);
+        });
+      });
     }
 
-    function crearTabla(M) {
-      return `<table>${M.map(fila =>
-        `<tr>${fila.map(v => `<td>${v.toFixed(2)}</td>`).join("")}</tr>`
-      ).join("")}</table>`;
+    function decimalAFraccion(decimal){
+      if(Math.abs(decimal)<1e-10) return "0";
+      let signo = decimal<0? "-":"";
+      decimal = Math.abs(decimal);
+      let denominador=1;
+      const precision=1e-6;
+      while(Math.abs(decimal*denominador-Math.round(decimal*denominador))>precision && denominador<1000) denominador++;
+      let numerador = Math.round(decimal*denominador);
+      const mcd=(a,b)=>b?mcd(b,a%b):a;
+      const divisor = mcd(numerador,denominador);
+      numerador/=divisor; denominador/=divisor;
+      return `${signo}${numerador}/${denominador}`;
     }
   </script>
 </body>

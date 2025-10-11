@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inversa de Matriz 6x6</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #ffffff;
+      color: #003366;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 3px solid #007BFF;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      border-left: 2px solid #007BFF;
+      border-right: 2px solid #007BFF;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+      text-align: center;
+    }
+
+    .matriz {
+      display: grid;
+      grid-template-columns: repeat(6, 60px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .matriz input {
+      width: 60px;
+      height: 40px;
+      text-align: center;
+      font-size: 1rem;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      color: #003366;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 600;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .resultado {
+      margin-top: 30px;
+      background: #f4f8ff;
+      padding: 25px 30px;
+      border-radius: 12px;
+      border: 1px solid #cce0ff;
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.15);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: #002b5c;
+      text-align: left;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .resultado table {
+      margin: 10px auto;
+      border-collapse: collapse;
+    }
+
+    .resultado td {
+      border: 1px solid #007BFF;
+      padding: 5px 10px;
+    }
+
+    footer {
+      margin-top: auto;
+      text-align: center;
+      background: linear-gradient(to right, #001f3f, #003366);
+      color: gold;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 8px;
+      padding: 20px 0;
+      border-top: 3px solid #007BFF;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <header>Inversa de Matriz 6x6 — Método Gauss-Jordan</header>
+
+  <main>
+    <p>Introduce los valores de la matriz 6x6:</p>
+
+    <div class="matriz" id="matriz6x6"></div>
+
+    <button onclick="calcularInversa()">Calcular Inversa</button>
+
+    <div id="resultado"></div>
+  </main>
+
+  <footer>INVERSA 6X6</footer>
+
+  <script>
+    const matrizContainer = document.getElementById("matriz6x6");
+    for (let i = 0; i < 6; i++) {
+      for (let j = 0; j < 6; j++) {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.id = `a${i}${j}`;
+        input.value = 0;
+        matrizContainer.appendChild(input);
+      }
+    }
+
+    function calcularInversa() {
+      const n = 6;
+      const A = [];
+      for (let i = 0; i < n; i++) {
+        const fila = [];
+        for (let j = 0; j < n; j++) {
+          fila.push(parseFloat(document.getElementById(`a${i}${j}`).value) || 0);
+        }
+        A.push(fila);
+      }
+
+      let I = Array.from({ length: n }, (_, i) =>
+        Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))
+      );
+      let pasos = "=== MATRIZ ORIGINAL ===\n" + mostrarMatriz(A) +
+                  "\n=== MATRIZ IDENTIDAD ===\n" + mostrarMatriz(I) +
+                  "\n=== MATRIZ AUMENTADA ===\n" + mostrarMatriz(A.map((fila, i) => [...fila, ...I])) + "\n";
+
+      for (let i = 0; i < n; i++) {
+        let pivote = A[i][i];
+        if (pivote === 0) {
+          let filaCambio = A.findIndex((f, idx) => idx > i && f[i] !== 0);
+          if (filaCambio === -1) {
+            document.getElementById("resultado").innerHTML = "<div class='resultado'>❌ No tiene inversa (determinante = 0)</div>";
+            return;
+          }
+          [A[i], A[filaCambio]] = [A[filaCambio], A[i]];
+          [I[i], I[filaCambio]] = [I[filaCambio], I[i]];
+          pasos += `Se intercambia fila ${i + 1} con fila ${filaCambio + 1}\n`;
+        }
+
+        pivote = A[i][i];
+        pasos += `Pivote F${i + 1} = ${pivote}\n`;
+        for (let j = 0; j < n; j++) {
+          A[i][j] /= pivote;
+          I[i][j] /= pivote;
+        }
+        pasos += `Se divide la fila ${i + 1} por ${pivote}\n` + mostrarMatriz(A.map((fila, idx) => [...fila, ...I[idx]]));
+
+        for (let k = 0; k < n; k++) {
+          if (k !== i) {
+            let factor = A[k][i];
+            for (let j = 0; j < n; j++) {
+              A[k][j] -= factor * A[i][j];
+              I[k][j] -= factor * I[i][j];
+            }
+            pasos += `F${k + 1} = F${k + 1} - (${factor.toFixed(2)})*F${i + 1}\n` + mostrarMatriz(A.map((fila, idx) => [...fila, ...I[idx]]));
+          }
+        }
+      }
+
+      pasos += "\n✅ MATRIZ INVERSA RESULTANTE:\n" + mostrarMatriz(I);
+
+      document.getElementById("resultado").innerHTML = `
+        <div class="resultado">
+          <h3>Matriz Inversa:</h3>
+          ${crearTabla(I)}
+          <pre>${pasos}</pre>
+        </div>
+      `;
+    }
+
+    function mostrarMatriz(M) {
+      return M.map(fila => fila.map(v => v.toFixed(2).padStart(8)).join(" ")).join("\n") + "\n";
+    }
+
+    function crearTabla(M) {
+      return `<table>${M.map(fila =>
+        `<tr>${fila.map(v => `<td>${v.toFixed(2)}</td>`).join("")}</tr>`
+      ).join("")}</table>`;
+    }
+  </script>
+</body>
+</html>

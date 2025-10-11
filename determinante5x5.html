@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Determinante 5x5 - Método Gauss-Jordan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #ffffff;
+      color: #003366;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 3px solid #007BFF;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #003366;
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+      border-left: 2px solid #007BFF;
+      border-right: 2px solid #007BFF;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+      text-align: center;
+    }
+
+    .matriz {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .matriz input {
+      width: 60px;
+      height: 40px;
+      text-align: center;
+      font-size: 1rem;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      color: #003366;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 600;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .resultado {
+      margin-top: 30px;
+      background: #f4f8ff;
+      padding: 25px 30px;
+      border-radius: 12px;
+      border: 1px solid #cce0ff;
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.15);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: #002b5c;
+      text-align: left;
+      line-height: 1.6;
+      position: relative;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .resultado::before {
+      content: "🧮 Procedimiento:";
+      position: absolute;
+      top: 5px;
+      left: 20px;
+      background: #ffffff;
+      color: #007BFF;
+      font-weight: bold;
+      padding: 0 6px;
+      font-size: 0.9rem;
+    }
+
+    .resultado span.pivote {
+      color: #007BFF;
+      font-weight: bold;
+    }
+
+    .resultado span.fila {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .resultado span.det {
+      display: block;
+      margin-top: 15px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #d63384;
+      text-align: center;
+    }
+
+    footer {
+      margin-top: auto;
+      text-align: center;
+      background: linear-gradient(to right, #001f3f, #003366);
+      color: gold;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 8px;
+      padding: 20px 0;
+      border-top: 3px solid #007BFF;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <header>Determinante de una Matriz 5x5 (Método Gauss-Jordan)</header>
+
+  <main>
+    <h2>Introduce los valores de la matriz:</h2>
+    <div class="matriz" id="matriz"></div>
+
+    <button id="calcular">Calcular determinante</button>
+    <div class="resultado" id="resultado"></div>
+  </main>
+
+  <footer>MATRICES</footer>
+
+  <script>
+    const matrizContainer = document.getElementById('matriz');
+    const n = 5;
+    for (let i = 0; i < n * n; i++) {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = 'any';
+      input.id = 'cell' + i;
+      matrizContainer.appendChild(input);
+    }
+
+    document.getElementById('calcular').addEventListener('click', () => {
+      let A = [];
+      for (let i = 0; i < n; i++) {
+        A[i] = [];
+        for (let j = 0; j < n; j++) {
+          const val = parseFloat(document.getElementById('cell' + (i * n + j)).value) || 0;
+          A[i][j] = val;
+        }
+      }
+
+      const pasos = [];
+      let det = 1;
+
+      for (let i = 0; i < n; i++) {
+        if (A[i][i] === 0) {
+          let swap = -1;
+          for (let k = i + 1; k < n; k++) {
+            if (A[k][i] !== 0) { swap = k; break; }
+          }
+          if (swap === -1) {
+            pasos.push("⚠️ No se puede continuar: la matriz es singular (determinante = 0).");
+            document.getElementById('resultado').innerHTML = pasos.join('<br>');
+            return;
+          }
+          [A[i], A[swap]] = [A[swap], A[i]];
+          det *= -1;
+          pasos.push(`<span class="fila">↔ Se intercambia F${i+1} ↔ F${swap+1}</span>`);
+        }
+
+        const pivote = A[i][i];
+        det *= pivote;
+        pasos.push(`<span class="pivote">Pivote en fila ${i+1}: ${pivote.toFixed(4)}</span>`);
+
+        for (let j = i + 1; j < n; j++) {
+          const factor = A[j][i] / pivote;
+          for (let k = i; k < n; k++) {
+            A[j][k] -= factor * A[i][k];
+          }
+          pasos.push(`<span class="fila">F${j+1} = F${j+1} - (${factor.toFixed(4)})×F${i+1}</span>`);
+        }
+      }
+
+      pasos.push(`<span class="det">🧠 Determinante = ${det.toFixed(4)}</span>`);
+      document.getElementById('resultado').innerHTML = pasos.join('<br>');
+    });
+  </script>
+</body>
+</html>

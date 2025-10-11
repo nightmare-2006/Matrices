@@ -1,0 +1,64 @@
+/* Estilo general */
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: #ffffff;
+  color: #003366;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Cabecera con líneas azules */
+header {
+  border-bottom: 3px solid #007BFF;
+  padding: 20px;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #003366;
+  letter-spacing: 2px;
+}
+
+/* Contenedor principal */
+main {
+  flex: 1;
+  padding: 40px 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  border-left: 2px solid #007BFF;
+  border-right: 2px solid #007BFF;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+}
+
+/* Botones y campos */
+button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  font-weight: 600;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Pie con el texto "MATRICES" */
+footer {
+  margin-top: auto;
+  text-align: center;
+  background: linear-gradient(to right, #001f3f, #003366);
+  color: gold;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 8px;
+  padding: 25px 0;
+  border-top: 3px solid #007BFF;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+}

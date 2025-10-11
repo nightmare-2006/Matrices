@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inversa 5x5 - Método Gauss-Jordan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #ffffff;
+      color: #002b5c;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 3px solid #007BFF;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #003366;
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      border-left: 2px solid #007BFF;
+      border-right: 2px solid #007BFF;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+      text-align: center;
+    }
+
+    .contenedor-matrices {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+
+    .matriz {
+      display: grid;
+      grid-template-columns: repeat(5, 55px);
+      gap: 10px;
+      justify-content: center;
+      margin: 15px 0;
+    }
+
+    .matriz input {
+      width: 55px;
+      height: 38px;
+      text-align: center;
+      font-size: 1rem;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      color: #003366;
+    }
+
+    .matriz-resultado {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(5, 55px);
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .matriz-resultado div {
+      width: 55px;
+      height: 38px;
+      line-height: 38px;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      text-align: center;
+      font-family: 'Roboto Mono', monospace;
+      background: #f4f8ff;
+    }
+
+    button, select {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 600;
+      margin-top: 15px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    select {
+      background-color: white;
+      color: #003366;
+      border: 2px solid #007BFF;
+      padding: 8px 12px;
+      margin-left: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .resultado {
+      margin-top: 30px;
+      background: #f4f8ff;
+      padding: 25px 30px;
+      border-radius: 12px;
+      border: 1px solid #cce0ff;
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.15);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: #002b5c;
+      text-align: left;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      margin-top: auto;
+      text-align: center;
+      background: linear-gradient(to right, #001f3f, #003366);
+      color: gold;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 8px;
+      padding: 20px 0;
+      border-top: 3px solid #007BFF;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <header>Inversa de una Matriz 5x5 (Gauss-Jordan)</header>
+
+  <main>
+    <h2>Introduce los valores de la matriz:</h2>
+    <div class="matriz" id="matriz"></div>
+
+    <div>
+      <button id="calcular">Calcular Inversa</button>
+      <label for="modo">Resultado en:</label>
+      <select id="modo">
+        <option value="decimal">Decimal</option>
+        <option value="fraccion">Fracción</option>
+      </select>
+    </div>
+
+    <div class="contenedor-matrices">
+      <div>
+        <h3>Matriz Identidad</h3>
+        <div class="matriz-resultado" id="identidad"></div>
+      </div>
+
+      <div>
+        <h3>Matriz Inversa</h3>
+        <div class="matriz-resultado" id="inversa"></div>
+      </div>
+    </div>
+
+    <div class="resultado" id="resultado"></div>
+  </main>
+
+  <footer>MATRICES</footer>
+
+  <script>
+    const n = 5; // tamaño de la matriz
+    const matrizContainer = document.getElementById('matriz');
+
+    for (let i = 0; i < n * n; i++) {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = 'any';
+      input.id = 'cell' + i;
+      matrizContainer.appendChild(input);
+    }
+
+    document.getElementById('calcular').addEventListener('click', () => {
+      let A = [], I = [];
+      for (let i = 0; i < n; i++) {
+        A[i] = [];
+        I[i] = [];
+        for (let j = 0; j < n; j++) {
+          A[i][j] = parseFloat(document.getElementById('cell' + (i * n + j)).value) || 0;
+          I[i][j] = (i === j ? 1 : 0);
+        }
+      }
+
+      const pasos = [];
+      pasos.push("Matriz aumentada [A | I]:");
+      pasos.push(JSON.stringify(A.map((fila, i) => [...fila, '|', ...I[i]])));
+
+      for (let i = 0; i < n; i++) {
+        if (A[i][i] === 0) {
+          let swap = -1;
+          for (let k = i + 1; k < n; k++) {
+            if (A[k][i] !== 0) { swap = k; break; }
+          }
+          if (swap === -1) {
+            pasos.push("⚠️ La matriz no tiene inversa (determinante = 0).");
+            document.getElementById('resultado').innerHTML = pasos.join('<br>');
+            return;
+          }
+          [A[i], A[swap]] = [A[swap], A[i]];
+          [I[i], I[swap]] = [I[swap], I[i]];
+          pasos.push(`↔ Se intercambia F${i+1} ↔ F${swap+1}`);
+        }
+
+        const pivote = A[i][i];
+        for (let j = 0; j < n; j++) {
+          A[i][j] /= pivote;
+          I[i][j] /= pivote;
+        }
+        pasos.push(`F${i+1} ÷= ${pivote.toFixed(4)}`);
+
+        for (let k = 0; k < n; k++) {
+          if (k !== i) {
+            const factor = A[k][i];
+            for (let j = 0; j < n; j++) {
+              A[k][j] -= factor * A[i][j];
+              I[k][j] -= factor * I[i][j];
+            }
+            pasos.push(`F${k+1} = F${k+1} - (${factor.toFixed(4)})×F${i+1}`);
+          }
+        }
+      }
+
+      pasos.push("✅ Se obtiene la matriz inversa en el lado derecho.");
+
+      mostrarMatriz(identidad(n), 'identidad');
+      const modo = document.getElementById('modo').value;
+      mostrarMatriz(I, 'inversa', modo);
+
+      document.getElementById('resultado').innerHTML = pasos.join('<br>');
+    });
+
+    function identidad(n) {
+      return Array.from({ length: n }, (_, i) =>
+        Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))
+      );
+    }
+
+    function mostrarMatriz(matriz, contenedorId, modo = 'decimal') {
+      const cont = document.getElementById(contenedorId);
+      cont.innerHTML = '';
+      matriz.forEach(fila => {
+        fila.forEach(val => {
+          const div = document.createElement('div');
+          div.textContent = modo === 'fraccion' ? decimalAFraccion(val) : Number(val.toFixed(3));
+          cont.appendChild(div);
+        });
+      });
+    }
+
+    function decimalAFraccion(decimal) {
+      if (Math.abs(decimal) < 1e-10) return "0";
+      let signo = decimal < 0 ? "-" : "";
+      decimal = Math.abs(decimal);
+      const precision = 1e-6;
+      let denominador = 1;
+      while (Math.abs(decimal * denominador - Math.round(decimal * denominador)) > precision && denominador < 1000) {
+        denominador++;
+      }
+      let numerador = Math.round(decimal * denominador);
+      const mcd = (a, b) => b ? mcd(b, a % b) : a;
+      const divisor = mcd(numerador, denominador);
+      numerador /= divisor;
+      denominador /= divisor;
+      return `${signo}${numerador}/${denominador}`;
+    }
+  </script>
+</body>
+</html>

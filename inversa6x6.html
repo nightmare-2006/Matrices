@@ -106,7 +106,34 @@
       padding: 20px 0;
       border-top: 3px solid #007BFF;
       text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
-    }
+    }@media (max-width: 768px) {
+  main {
+    padding: 20px 10px;
+  }
+
+  .matriz {
+    grid-template-columns: repeat(6, 45px);
+    gap: 6px;
+  }
+
+  .matriz input {
+    width: 45px;
+    height: 35px;
+    font-size: 0.9rem;
+  }
+
+  button {
+    width: 100%;
+    font-size: 1rem;
+    padding: 12px 0;
+  }
+
+  footer {
+    font-size: 1.3rem;
+    letter-spacing: 4px;
+  }
+}
+
   </style>
 </head>
 <body>

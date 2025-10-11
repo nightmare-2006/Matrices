@@ -138,7 +138,34 @@
     h3 {
       margin-bottom: 10px;
       color: #007BFF;
-    }
+    }@media (max-width: 768px) {
+  main {
+    padding: 20px 10px;
+  }
+
+  .matriz {
+    grid-template-columns: repeat(6, 45px);
+    gap: 6px;
+  }
+
+  .matriz input {
+    width: 45px;
+    height: 35px;
+    font-size: 0.9rem;
+  }
+
+  button {
+    width: 100%;
+    font-size: 1rem;
+    padding: 12px 0;
+  }
+
+  footer {
+    font-size: 1.3rem;
+    letter-spacing: 4px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -175,108 +202,137 @@
   <footer>MATRICES</footer>
 
   <script>
-    const matrizContainer = document.getElementById('matriz');
-    for (let i = 0; i < 16; i++) {
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.step = 'any';
-      input.id = 'cell' + i;
-      matrizContainer.appendChild(input);
+  const matrizContainer = document.getElementById('matriz');
+  for (let i = 0; i < 16; i++) {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.step = 'any';
+    input.id = 'cell' + i;
+    matrizContainer.appendChild(input);
+  }
+
+  document.getElementById('calcular').addEventListener('click', () => {
+    let A = [], I = [];
+    for (let i = 0; i < 4; i++) {
+      A[i] = [];
+      I[i] = [];
+      for (let j = 0; j < 4; j++) {
+        A[i][j] = parseFloat(document.getElementById('cell' + (i * 4 + j)).value) || 0;
+        I[i][j] = (i === j ? 1 : 0);
+      }
     }
 
-    document.getElementById('calcular').addEventListener('click', () => {
-      let A = [], I = [];
-      for (let i = 0; i < 4; i++) {
-        A[i] = [];
-        I[i] = [];
-        for (let j = 0; j < 4; j++) {
-          A[i][j] = parseFloat(document.getElementById('cell' + (i * 4 + j)).value) || 0;
-          I[i][j] = (i === j ? 1 : 0);
+    const pasos = [];
+    pasos.push("Matriz aumentada [A | I]:");
+    pasos.push(JSON.stringify(A.map((fila, i) => [...fila, '|', ...I[i]])));
+
+    // Seguimiento de columnas para swaps si se necesitara
+    let colOrder = [0,1,2,3]; 
+
+    for (let i = 0; i < 4; i++) {
+      // Buscar pivote no nulo
+      if (A[i][i] === 0) {
+        let swapFila = -1;
+        let swapCol = -1;
+        for (let k = i + 1; k < 4; k++) {
+          if (A[k][i] !== 0) { swapFila = k; break; }
         }
-      }
-
-      const pasos = [];
-      pasos.push("Matriz aumentada [A | I]:");
-      pasos.push(JSON.stringify(A.map((fila, i) => [...fila, '|', ...I[i]])));
-
-      for (let i = 0; i < 4; i++) {
-        if (A[i][i] === 0) {
-          let swap = -1;
+        // Si no hay fila con pivote, buscar columna
+        if (swapFila === -1) {
           for (let k = i + 1; k < 4; k++) {
-            if (A[k][i] !== 0) { swap = k; break; }
+            if (A[i][k] !== 0) { swapCol = k; break; }
           }
-          if (swap === -1) {
-            pasos.push("⚠️ La matriz no tiene inversa (determinante = 0).");
-            document.getElementById('resultado').innerHTML = pasos.join('<br>');
-            return;
-          }
-          [A[i], A[swap]] = [A[swap], A[i]];
-          [I[i], I[swap]] = [I[swap], I[i]];
-          pasos.push(`↔ Se intercambia F${i+1} ↔ F${swap+1}`);
         }
 
-        const pivote = A[i][i];
-        for (let j = 0; j < 4; j++) {
-          A[i][j] /= pivote;
-          I[i][j] /= pivote;
-        }
-        pasos.push(`F${i+1} ÷= ${pivote.toFixed(4)}`);
-
-        for (let k = 0; k < 4; k++) {
-          if (k !== i) {
-            const factor = A[k][i];
-            for (let j = 0; j < 4; j++) {
-              A[k][j] -= factor * A[i][j];
-              I[k][j] -= factor * I[i][j];
-            }
-            pasos.push(`F${k+1} = F${k+1} - (${factor.toFixed(4)})×F${i+1}`);
+        if (swapFila !== -1) {
+          [A[i], A[swapFila]] = [A[swapFila], A[i]];
+          [I[i], I[swapFila]] = [I[swapFila], I[i]];
+          pasos.push(`↔ Se intercambia F${i+1} ↔ F${swapFila+1}`);
+        } else if (swapCol !== -1) {
+          for (let f = 0; f < 4; f++) {
+            [A[f][i], A[f][swapCol]] = [A[f][swapCol], A[f][i]];
           }
+          [colOrder[i], colOrder[swapCol]] = [colOrder[swapCol], colOrder[i]];
+          pasos.push(`↔ Se intercambia C${i+1} ↔ C${swapCol+1}`);
+        } else {
+          pasos.push("⚠️ La matriz no tiene inversa (determinante = 0).");
+          document.getElementById('resultado').innerHTML = pasos.join('<br>');
+          return;
         }
       }
 
-      pasos.push("✅ Se obtiene la matriz inversa en el lado derecho.");
+      const pivote = A[i][i];
+      for (let j = 0; j < 4; j++) {
+        A[i][j] /= pivote;
+        I[i][j] /= pivote;
+      }
+      pasos.push(`F${i+1} ÷= ${pivote.toFixed(4)}`);
 
-      mostrarMatriz([
-        [1,0,0,0],
-        [0,1,0,0],
-        [0,0,1,0],
-        [0,0,0,1]
-      ], 'identidad');
+      for (let k = 0; k < 4; k++) {
+        if (k !== i) {
+          const factor = A[k][i];
+          for (let j = 0; j < 4; j++) {
+            A[k][j] -= factor * A[i][j];
+            I[k][j] -= factor * I[i][j];
+          }
+          pasos.push(`F${k+1} = F${k+1} - (${factor.toFixed(4)})×F${i+1}`);
+        }
+      }
+    }
 
-      const modo = document.getElementById('modo').value;
-      mostrarMatriz(I, 'inversa', modo);
+    // Reordenar columnas de la inversa según swaps de columnas
+    let Ifinal = [];
+    for (let f = 0; f < 4; f++) Ifinal[f] = [];
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        Ifinal[i][colOrder[j]] = I[i][j];
+      }
+    }
 
-      document.getElementById('resultado').innerHTML = pasos.join('<br>');
-    });
+    pasos.push("✅ Se obtiene la matriz inversa en el lado derecho.");
 
-    function mostrarMatriz(matriz, contenedorId, modo = 'decimal') {
-      const cont = document.getElementById(contenedorId);
-      cont.innerHTML = '';
-      matriz.forEach(fila => {
-        fila.forEach(val => {
-          const div = document.createElement('div');
-          div.textContent = modo === 'fraccion' ? decimalAFraccion(val) : Number(val.toFixed(3));
-          cont.appendChild(div);
-        });
+    mostrarMatriz([
+      [1,0,0,0],
+      [0,1,0,0],
+      [0,0,1,0],
+      [0,0,0,1]
+    ], 'identidad');
+
+    const modo = document.getElementById('modo').value;
+    mostrarMatriz(Ifinal, 'inversa', modo);
+
+    document.getElementById('resultado').innerHTML = pasos.join('<br>');
+  });
+
+  function mostrarMatriz(matriz, contenedorId, modo = 'decimal') {
+    const cont = document.getElementById(contenedorId);
+    cont.innerHTML = '';
+    matriz.forEach(fila => {
+      fila.forEach(val => {
+        const div = document.createElement('div');
+        div.textContent = modo === 'fraccion' ? decimalAFraccion(val) : Number(val.toFixed(3));
+        cont.appendChild(div);
       });
-    }
+    });
+  }
 
-    function decimalAFraccion(decimal) {
-      if (Math.abs(decimal) < 1e-10) return "0";
-      let signo = decimal < 0 ? "-" : "";
-      decimal = Math.abs(decimal);
-      const precision = 1e-6;
-      let denominador = 1;
-      while (Math.abs(decimal * denominador - Math.round(decimal * denominador)) > precision && denominador < 1000) {
-        denominador++;
-      }
-      let numerador = Math.round(decimal * denominador);
-      const mcd = (a, b) => b ? mcd(b, a % b) : a;
-      const divisor = mcd(numerador, denominador);
-      numerador /= divisor;
-      denominador /= divisor;
-      return `${signo}${numerador}/${denominador}`;
+  function decimalAFraccion(decimal) {
+    if (Math.abs(decimal) < 1e-10) return "0";
+    let signo = decimal < 0 ? "-" : "";
+    decimal = Math.abs(decimal);
+    const precision = 1e-6;
+    let denominador = 1;
+    while (Math.abs(decimal * denominador - Math.round(decimal * denominador)) > precision && denominador < 1000) {
+      denominador++;
     }
-  </script>
+    let numerador = Math.round(decimal * denominador);
+    const mcd = (a, b) => b ? mcd(b, a % b) : a;
+    const divisor = mcd(numerador, denominador);
+    numerador /= divisor;
+    denominador /= divisor;
+    return `${signo}${numerador}/${denominador}`;
+  }
+</script>
+
 </body>
 </html>

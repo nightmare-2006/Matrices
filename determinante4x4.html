@@ -131,7 +131,48 @@
       padding: 20px 0;
       border-top: 3px solid #007BFF;
       text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
-    }
+    }@media (max-width: 768px) {
+  main {
+    padding: 20px 10px;
+  }
+
+  .matriz {
+    grid-template-columns: repeat(6, 45px);
+    gap: 6px;
+  }
+
+  .matriz input {
+    width: 45px;
+    height: 35px;
+    font-size: 0.9rem;
+  }
+
+  button {
+    width: 100%;
+    font-size: 1rem;
+    padding: 12px 0;
+  }
+
+  footer {
+    font-size: 1.3rem;
+    letter-spacing: 4px;
+  }
+}.boton-pasos {
+  background-color: #00b894;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.boton-pasos:hover {
+  background-color: #019870;
+}
+
+
   </style>
 </head>
 <body>
@@ -140,6 +181,9 @@
   <main>
     <h2>Introduce los valores de la matriz:</h2>
     <div class="matriz" id="matriz"></div>
+<div style="margin-top: 20px;">
+  <button id="verPasos" class="boton-pasos">🔍 Ver resolución paso a paso</button>
+</div>
 
     <button id="calcular">Calcular determinante</button>
     <div class="resultado" id="resultado"></div>
@@ -202,6 +246,10 @@
       pasos.push(`<span class="det">🧠 Determinante = ${det.toFixed(4)}</span>`);
       document.getElementById('resultado').innerHTML = pasos.join('<br>');
     });
+    document.getElementById("verPasos").addEventListener("click", () => {
+  window.location.href = "pasos_determinante4x4.html"; // o pasos_determinante4x4.html según la página
+});
+
   </script>
 </body>
 </html>

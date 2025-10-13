@@ -120,6 +120,7 @@
       text-align: left;
       line-height: 1.6;
       white-space: pre-wrap;
+      overflow-x: auto;
     }
 
     footer {
@@ -138,32 +139,49 @@
     h3 {
       margin-bottom: 10px;
       color: #007BFF;
-    }@media (max-width: 768px) {
-  main {
-    padding: 20px 10px;
-  }
+    }
 
-  .matriz {
-    grid-template-columns: repeat(6, 45px);
-    gap: 6px;
-  }
+    /* === Versión móvil mejorada === */
+    @media (max-width: 768px) {
+      main {
+        padding: 20px 10px;
+      }
 
-  .matriz input {
-    width: 45px;
-    height: 35px;
-    font-size: 0.9rem;
-  }
+      .matriz,
+      .matriz-resultado {
+        grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+        gap: 6px;
+      }
 
-  button {
-    width: 100%;
-    font-size: 1rem;
-    padding: 12px 0;
-  }
+      .matriz input, .matriz-resultado div {
+        width: 45px;
+        height: 35px;
+        font-size: 0.9rem;
+      }
 
-  footer {
-    font-size: 1.3rem;
-    letter-spacing: 4px;
-  }
+      button {
+        width: 100%;
+        font-size: 1rem;
+        padding: 12px 0;
+      }
+
+      footer {
+        font-size: 1.3rem;
+        letter-spacing: 4px;
+      }
+    }.boton-pasos {
+  background-color: #00b894;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.boton-pasos:hover {
+  background-color: #019870;
 }
 
   </style>
@@ -174,6 +192,9 @@
   <main>
     <h2>Introduce los valores de la matriz:</h2>
     <div class="matriz" id="matriz"></div>
+<div style="margin-top: 20px;">
+  <button id="verPasos" class="boton-pasos">🔍 Ver resolución paso a paso</button>
+</div>
 
     <div>
       <button id="calcular">Calcular Inversa</button>
@@ -223,25 +244,18 @@
     }
 
     const pasos = [];
-    pasos.push("Matriz aumentada [A | I]:");
-    pasos.push(JSON.stringify(A.map((fila, i) => [...fila, '|', ...I[i]])));
+    pasos.push("=== MATRIZ AUMENTADA [A | I] ===");
 
-    // Seguimiento de columnas para swaps si se necesitara
-    let colOrder = [0,1,2,3]; 
+    let colOrder = [0, 1, 2, 3];
 
     for (let i = 0; i < 4; i++) {
       // Buscar pivote no nulo
       if (A[i][i] === 0) {
-        let swapFila = -1;
+        let swapFila = A.findIndex((fila, idx) => idx > i && fila[i] !== 0);
         let swapCol = -1;
-        for (let k = i + 1; k < 4; k++) {
-          if (A[k][i] !== 0) { swapFila = k; break; }
-        }
-        // Si no hay fila con pivote, buscar columna
+
         if (swapFila === -1) {
-          for (let k = i + 1; k < 4; k++) {
-            if (A[i][k] !== 0) { swapCol = k; break; }
-          }
+          swapCol = A[i].findIndex((val, idx) => idx > i && val !== 0);
         }
 
         if (swapFila !== -1) {
@@ -249,13 +263,11 @@
           [I[i], I[swapFila]] = [I[swapFila], I[i]];
           pasos.push(`↔ Se intercambia F${i+1} ↔ F${swapFila+1}`);
         } else if (swapCol !== -1) {
-          for (let f = 0; f < 4; f++) {
-            [A[f][i], A[f][swapCol]] = [A[f][swapCol], A[f][i]];
-          }
+          for (let f = 0; f < 4; f++) [A[f][i], A[f][swapCol]] = [A[f][swapCol], A[f][i]];
           [colOrder[i], colOrder[swapCol]] = [colOrder[swapCol], colOrder[i]];
           pasos.push(`↔ Se intercambia C${i+1} ↔ C${swapCol+1}`);
         } else {
-          pasos.push("⚠️ La matriz no tiene inversa (determinante = 0).");
+          pasos.push("⚠️ No tiene inversa (determinante = 0)");
           document.getElementById('resultado').innerHTML = pasos.join('<br>');
           return;
         }
@@ -280,37 +292,34 @@
       }
     }
 
-    // Reordenar columnas de la inversa según swaps de columnas
-    let Ifinal = [];
-    for (let f = 0; f < 4; f++) Ifinal[f] = [];
-    for (let i = 0; i < 4; i++) {
+    // Reordenar columnas de la inversa
+    const Ifinal = Array.from({ length: 4 }, () => Array(4).fill(0));
+    for (let f = 0; f < 4; f++) {
       for (let j = 0; j < 4; j++) {
-        Ifinal[i][colOrder[j]] = I[i][j];
+        Ifinal[f][colOrder[j]] = I[f][j];
       }
     }
 
-    pasos.push("✅ Se obtiene la matriz inversa en el lado derecho.");
+    pasos.push("✅ MATRIZ INVERSA FINAL:");
 
-    mostrarMatriz([
-      [1,0,0,0],
-      [0,1,0,0],
-      [0,0,1,0],
-      [0,0,0,1]
-    ], 'identidad');
-
-    const modo = document.getElementById('modo').value;
-    mostrarMatriz(Ifinal, 'inversa', modo);
-
+    mostrarMatriz(identityMatrix(4), 'identidad');
+    mostrarMatriz(Ifinal, 'inversa', document.getElementById('modo').value);
     document.getElementById('resultado').innerHTML = pasos.join('<br>');
   });
 
-  function mostrarMatriz(matriz, contenedorId, modo = 'decimal') {
-    const cont = document.getElementById(contenedorId);
+  function identityMatrix(n) {
+    return Array.from({length:n}, (_,i)=>
+      Array.from({length:n}, (_,j)=> i===j?1:0)
+    );
+  }
+
+  function mostrarMatriz(matriz, id, modo='decimal') {
+    const cont = document.getElementById(id);
     cont.innerHTML = '';
     matriz.forEach(fila => {
-      fila.forEach(val => {
+      fila.forEach(v => {
         const div = document.createElement('div');
-        div.textContent = modo === 'fraccion' ? decimalAFraccion(val) : Number(val.toFixed(3));
+        div.textContent = modo==='fraccion'? decimalAFraccion(v): Number(v.toFixed(3));
         cont.appendChild(div);
       });
     });
@@ -321,18 +330,15 @@
     let signo = decimal < 0 ? "-" : "";
     decimal = Math.abs(decimal);
     const precision = 1e-6;
-    let denominador = 1;
-    while (Math.abs(decimal * denominador - Math.round(decimal * denominador)) > precision && denominador < 1000) {
-      denominador++;
-    }
-    let numerador = Math.round(decimal * denominador);
-    const mcd = (a, b) => b ? mcd(b, a % b) : a;
-    const divisor = mcd(numerador, denominador);
-    numerador /= divisor;
-    denominador /= divisor;
-    return `${signo}${numerador}/${denominador}`;
+    let denom = 1;
+    while (Math.abs(decimal * denom - Math.round(decimal * denom)) > precision && denom < 1000) denom++;
+    let num = Math.round(decimal * denom);
+    const mcd = (a,b)=> b?mcd(b,a%b):a;
+    const div = mcd(num, denom);
+    num /= div; denom /= div;
+    return `${signo}${num}/${denom}`;
   }
-</script>
-
+  </script>
 </body>
 </html>
+

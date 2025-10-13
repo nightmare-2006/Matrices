@@ -154,6 +154,7 @@
       <form>
         <label for="tamano">Tamaño de la matriz:</label>
         <select id="tamano" name="tamano">
+          <option value="3">3x3</option>
           <option value="4">4x4</option>
           <option value="5">5x5</option>
           <option value="6">6x6</option>
@@ -181,10 +182,12 @@
       let destino = '';
 
       if (operacion === 'det') {
+        if (tamano === '3') destino = 'determinante3x3.html';
         if (tamano === '4') destino = 'determinante4x4.html';
         if (tamano === '5') destino = 'determinante5x5.html';
         if (tamano === '6') destino = 'determinante6x6.html';
       } else if (operacion === 'inv') {
+        if (tamano === '3') destino = 'inversa3x3.html';
         if (tamano === '4') destino = 'inversa4x4.html';
         if (tamano === '5') destino = 'inversa5x5.html';
         if (tamano === '6') destino = 'inversa6x6.html';

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Determinante 3x3 - Sarrus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #ffffff;
+      color: #003366;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      border-bottom: 3px solid #007BFF;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #003366;
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      border-left: 2px solid #007BFF;
+      border-right: 2px solid #007BFF;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+      text-align: center;
+    }
+
+    .matriz {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      gap: 12px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .matriz input {
+      width: 60px;
+      height: 40px;
+      text-align: center;
+      font-size: 1rem;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      color: #003366;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 600;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .resultado {
+      margin-top: 30px;
+      background: #f4f8ff;
+      padding: 25px 30px;
+      border-radius: 12px;
+      border: 1px solid #cce0ff;
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.15);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: #002b5c;
+      text-align: left;
+      line-height: 1.6;
+      position: relative;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .resultado::before {
+      content: "🧮 Procedimiento:";
+      position: absolute;
+      top: 5px;
+      left: 20px;
+      background: #ffffff;
+      color: #007BFF;
+      font-weight: bold;
+      padding: 0 6px;
+      font-size: 0.9rem;
+    }
+
+    .resultado span.pivote {
+      color: #007BFF;
+      font-weight: bold;
+    }
+
+    .resultado span.fila {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .resultado span.det {
+      display: block;
+      margin-top: 15px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #d63384;
+      text-align: center;
+    }
+
+    footer {
+      margin-top: auto;
+      text-align: center;
+      background: linear-gradient(to right, #001f3f, #003366);
+      color: gold;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 8px;
+      padding: 20px 0;
+      border-top: 3px solid #007BFF;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding: 20px 10px;
+      }
+
+      .matriz {
+        grid-template-columns: repeat(3, 45px);
+        gap: 6px;
+      }
+
+      .matriz input {
+        width: 45px;
+        height: 35px;
+        font-size: 0.9rem;
+      }
+
+      button {
+        width: 100%;
+        font-size: 1rem;
+        padding: 12px 0;
+      }
+
+      footer {
+        font-size: 1.3rem;
+        letter-spacing: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>Determinante de una Matriz 3x3 (Sarrus)</header>
+
+  <main>
+    <h2>Introduce los valores de la matriz:</h2>
+    <div class="matriz" id="matriz"></div>
+
+    <button id="calcular">Calcular determinante</button>
+    <div class="resultado" id="resultado"></div>
+  </main>
+
+  <footer>MATRICES</footer>
+
+  <script>
+    const matrizContainer = document.getElementById('matriz');
+
+    // Crear 9 campos de entrada (3x3)
+    for (let i = 0; i < 9; i++) {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = 'any';
+      input.id = 'cell' + i;
+      matrizContainer.appendChild(input);
+    }
+
+    document.getElementById('calcular').addEventListener('click', () => {
+      const A = [];
+      for (let i = 0; i < 3; i++) {
+        A[i] = [];
+        for (let j = 0; j < 3; j++) {
+          const val = parseFloat(document.getElementById('cell' + (i * 3 + j)).value) || 0;
+          A[i][j] = val;
+        }
+      }
+
+      const [a, b, c] = A[0];
+      const [d, e, f] = A[1];
+      const [g, h, i] = A[2];
+
+      let pasos = [];
+
+      pasos.push(`➕ Productos diagonales positivas:`);
+      pasos.push(`  aei = ${a}×${e}×${i} = ${(a * e * i).toFixed(4)}`);
+      pasos.push(`  bfg = ${b}×${f}×${g} = ${(b * f * g).toFixed(4)}`);
+      pasos.push(`  cdh = ${c}×${d}×${h} = ${(c * d * h).toFixed(4)}`);
+
+      pasos.push(`➖ Productos diagonales negativas:`);
+      pasos.push(`  ceg = ${c}×${e}×${g} = ${(c * e * g).toFixed(4)}`);
+      pasos.push(`  bdi = ${b}×${d}×${i} = ${(b * d * i).toFixed(4)}`);
+      pasos.push(`  afh = ${a}×${f}×${h} = ${(a * f * h).toFixed(4)}`);
+
+      const positivo = a * e * i + b * f * g + c * d * h;
+      const negativo = c * e * g + b * d * i + a * f * h;
+      const det = positivo - negativo;
+
+      pasos.push(`<span class="det">🧠 Determinante = (${positivo.toFixed(4)}) - (${negativo.toFixed(4)}) = ${det.toFixed(4)}</span>`);
+
+      document.getElementById("resultado").innerHTML = pasos.join("<br>");
+    });
+  </script>
+</body>
+</html>
+

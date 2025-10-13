@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inversa 3x3 – Método de Cofactores</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #ffffff;
+      color: #002b5c;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 3px solid #007BFF;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #003366;
+    }
+    main {
+      flex: 1;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      border-left: 2px solid #007BFF;
+      border-right: 2px solid #007BFF;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+      text-align: center;
+    }
+    .matriz {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .matriz input {
+      width: 60px;
+      height: 40px;
+      text-align: center;
+      font-size: 1rem;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      color: #003366;
+    }
+    button, select {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 600;
+      margin-top: 15px;
+      font-family: 'Poppins', sans-serif;
+    }
+    select {
+      background-color: white;
+      color: #003366;
+      border: 2px solid #007BFF;
+      padding: 8px 12px;
+      margin-left: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .matriz-resultado {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      gap: 10px;
+      justify-content: center;
+    }
+    .matriz-resultado div {
+      width: 60px;
+      height: 40px;
+      line-height: 40px;
+      border: 2px solid #007BFF;
+      border-radius: 6px;
+      text-align: center;
+      font-family: 'Roboto Mono', monospace;
+      background: #f4f8ff;
+    }
+    .resultado {
+      margin-top: 30px;
+      background: #f4f8ff;
+      padding: 25px 30px;
+      border-radius: 12px;
+      border: 1px solid #cce0ff;
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.15);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: #002b5c;
+      text-align: left;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    footer {
+      margin-top: auto;
+      text-align: center;
+      background: linear-gradient(to right, #001f3f, #003366);
+      color: gold;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 8px;
+      padding: 20px 0;
+      border-top: 3px solid #007BFF;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+    }
+    @media (max-width: 768px) {
+      main {
+        padding: 20px 10px;
+      }
+      .matriz, .matriz-resultado {
+        grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+        gap: 6px;
+      }
+      .matriz input, .matriz-resultado div {
+        width: 45px;
+        height: 35px;
+        font-size: 0.9rem;
+      }
+      button {
+        width: 100%;
+        font-size: 1rem;
+        padding: 12px 0;
+      }
+      footer {
+        font-size: 1.3rem;
+        letter-spacing: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>Inversa de una Matriz 3×3 (Cofactores)</header>
+
+  <main>
+    <h2>Introduce los valores de la matriz 3×3:</h2>
+    <div class="matriz" id="matriz"></div>
+
+    <div>
+      <button id="calcular">Calcular Inversa</button>
+      <label for="modo">Resultado en:</label>
+      <select id="modo">
+        <option value="decimal">Decimal</option>
+        <option value="fraccion">Fracción</option>
+      </select>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <h3>Matriz Inversa</h3>
+      <div class="matriz-resultado" id="inversa"></div>
+    </div>
+
+    <div class="resultado" id="resultado"></div>
+  </main>
+
+  <footer>MATRICES</footer>
+
+  <script>
+    const matrizContainer = document.getElementById('matriz');
+    // Crear 9 campos de entrada (3×3)
+    for (let i = 0; i < 9; i++) {
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = 'any';
+      input.id = 'cell' + i;
+      matrizContainer.appendChild(input);
+    }
+
+    document.getElementById('calcular').addEventListener('click', () => {
+      const A = [];
+      for (let i = 0; i < 3; i++) {
+        A[i] = [];
+        for (let j = 0; j < 3; j++) {
+          const val = parseFloat(document.getElementById('cell' + (i * 3 + j)).value) || 0;
+          A[i][j] = val;
+        }
+      }
+
+      const pasos = [];
+
+      // Calcular determinante de A por Sarrus (como se hizo antes)
+      const [a, b, c] = A[0];
+      const [d, e, f] = A[1];
+      const [g, h, i] = A[2];
+      const positivo = a * e * i + b * f * g + c * d * h;
+      const negativo = c * e * g + b * d * i + a * f * h;
+      const det = positivo - negativo;
+
+      pasos.push(`Determinante (por Sarrus) = ${positivo.toFixed(4)} - ${negativo.toFixed(4)} = ${det.toFixed(4)}`);
+      if (Math.abs(det) < 1e-9) {
+        pasos.push("⚠️ La matriz no es invertible (det = 0).");
+        document.getElementById('resultado').innerHTML = pasos.join('<br>');
+        document.getElementById('inversa').innerHTML = '';
+        return;
+      }
+
+      // Función auxiliar: menor 2×2
+      function menor2x2(m, r, c) {
+        // retorna el determinante de la submatriz 2x2 quitando fila r y columna c
+        const sub = [];
+        for (let rr = 0; rr < 3; rr++) {
+          if (rr === r) continue;
+          const fila = [];
+          for (let cc = 0; cc < 3; cc++) {
+            if (cc === c) continue;
+            fila.push(m[rr][cc]);
+          }
+          sub.push(fila);
+        }
+        // sub es 2×2
+        return sub[0][0] * sub[1][1] - sub[0][1] * sub[1][0];
+      }
+
+      // Construir matriz de cofactores
+      const Cof = [];
+      for (let r = 0; r < 3; r++) {
+        Cof[r] = [];
+        for (let c = 0; c < 3; c++) {
+          const signo = ((r + c) % 2 === 0) ? 1 : -1;
+          Cof[r][c] = signo * menor2x2(A, r, c);
+        }
+      }
+      pasos.push("Matriz de cofactores:");
+      Cof.forEach(row => pasos.push(row.map(v => v.toFixed(4)).join('  ')));
+
+      // Adjunta es la traspuesta de los cofactores
+      const Adj = [];
+      for (let r = 0; r < 3; r++) {
+        Adj[r] = [];
+        for (let c = 0; c < 3; c++) {
+          Adj[r][c] = Cof[c][r];
+        }
+      }
+      pasos.push("Matriz adjunta (cofactores transpuestos):");
+      Adj.forEach(row => pasos.push(row.map(v => v.toFixed(4)).join('  ')));
+
+      // Inversa = (1/det) * adjunta
+      const Inv = [];
+      for (let r = 0; r < 3; r++) {
+        Inv[r] = [];
+        for (let c = 0; c < 3; c++) {
+          Inv[r][c] = Adj[r][c] / det;
+        }
+      }
+
+      pasos.push("Matriz inversa calculada:");
+
+      mostrarMatriz(Inv, 'inversa', document.getElementById('modo').value);
+      document.getElementById('resultado').innerHTML = pasos.join('<br>');
+    });
+
+    function mostrarMatriz(matriz, id, modo = 'decimal') {
+      const cont = document.getElementById(id);
+      cont.innerHTML = '';
+      matriz.forEach(fila => {
+        fila.forEach(v => {
+          const div = document.createElement('div');
+          div.textContent = (modo === 'fraccion') ? decimalAFraccion(v) : Number(v.toFixed(4));
+          cont.appendChild(div);
+        });
+      });
+    }
+
+    function decimalAFraccion(decimal) {
+      if (Math.abs(decimal) < 1e-12) return "0";
+      let signo = decimal < 0 ? "-" : "";
+      decimal = Math.abs(decimal);
+      const tolerance = 1e-6;
+      let denom = 1;
+      while (Math.abs(decimal * denom - Math.round(decimal * denom)) > tolerance && denom < 10000) {
+        denom++;
+      }
+      let num = Math.round(decimal * denom);
+      const mcd = (a, b) => b ? mcd(b, a % b) : a;
+      const div = mcd(num, denom);
+      num /= div;
+      denom /= div;
+      return `${signo}${num}/${denom}`;
+    }
+  </script>
+</body>
+</html>
